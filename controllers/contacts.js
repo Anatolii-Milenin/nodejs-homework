@@ -1,6 +1,5 @@
 const { CtrlWrapper, HttpErrors } = require("../helpers/");
 const contactsMethods = require("../models/contacts");
-models / contacts;
 
 const getAll = async (req, res, next) => {
   const list = await contactsMethods.listContacts();
@@ -9,11 +8,10 @@ const getAll = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   const { contactId } = req.params;
-
   const contact = await contactsMethods.getContactById(contactId);
 
   if (!contact) {
-    throw HttpErrors(404, "Not found, man");
+    throw HttpErrors(404, "Not found");
   }
 
   res.json(contact);
@@ -26,18 +24,26 @@ const addContact = async (req, res, next) => {
 
 const deleteContact = async (req, res, next) => {
   const { contactId } = req.params;
+  try {
+    const delContact = await contactsMethods.removeContact(contactId);
 
-  const delContact = await contactsMethods.removeContact(contactId);
+    if (!delContact) {
+      throw HttpErrors(404, "Not found");
+    }
 
-  if (!delContact) {
-    throw HttpErrors(404, "Not found");
+    res.json(200, { message: "contanct deleted" });
+  } catch (error) {
+    next(error);
   }
-
-  res.json(delContact);
 };
 
 const updateContact = async (req, res, next) => {
   const { contactId } = req.params;
+  const { name, email, phone } = req.body;
+
+  if (!name && !email && !phone) {
+    throw HttpErrors(400, "missing fields");
+  }
 
   const updContact = await contactsMethods.updateContact(contactId, req.body);
 
