@@ -54,20 +54,18 @@ const updateById = async (req, res, next) => {
 };
 
 const updateStatusContact = async (req, res) => {
-  const { id } = req.params;
+  const { error } = updateFavoriteSchema.validate(req.body);
 
-  const existingContact = await Contact.findById(id);
-
-  if (!existingContact) {
-    throw HttpError(404, "Not found");
+  if (error) {
+    throw HttpError(400, "missing field favorite");
   }
 
-  const updatedFields = req.body;
-  Object.keys(updatedFields).forEach((field) => {
-    existingContact[field] = updatedFields[field];
-  });
+  const { id } = req.params;
+  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
 
-  const result = await existingContact.save();
+  if (!result) {
+    throw HttpError(404, "Not found");
+  }
 
   res.json(result);
 };
