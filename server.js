@@ -1,6 +1,16 @@
-const app = require("./app"); // Підключення модуля `app`
+const mongoose = require("mongoose");
+const app = require("./app");
 
-app.listen(3000, () => {
-  // Запуск сервера на порті 3000
-  console.log("Server running. Use our API on port: 3000"); // Вивід повідомлення у консолі
-});
+const DB_HOST =
+  "mongodb+srv://Anatoliy:fXRpjk4h1FLWPYxs@cluster0.ar0lvfe.mongodb.net/my-contacts?retryWrites=true&w=majority";
+mongoose
+  .connect(DB_HOST)
+  .then(() => {
+    app.listen(3000, () => {
+      console.log("Database connection successful");
+    });
+  })
+  .catch((error) => {
+    console.log(error.message);
+    process.exit(1);
+  });
