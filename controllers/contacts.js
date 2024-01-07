@@ -37,7 +37,8 @@ const addContact = async (req, res, next) => {
 };
 
 const updateById = async (req, res, next) => {
-  const { error } = addSchema.validate(req.body);
+  // const { error } = addSchema.validate(req.body);
+  const { error } = updateFavoriteSchema.validate(req.body);
 
   if (error) {
     throw HttpError(400, "missing fields");
