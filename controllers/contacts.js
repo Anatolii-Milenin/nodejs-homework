@@ -18,7 +18,7 @@ const getById = async (req, res, next) => {
   const result = await Contact.findById(id);
 
   if (!result) {
-    throw HttpError(404, "Not found");
+    return res.status(404).json({ message: "Not found" });
   }
 
   res.json(result);
@@ -37,7 +37,7 @@ const addContact = async (req, res, next) => {
 };
 
 const updateById = async (req, res, next) => {
-  const { error } = updateFavoriteSchema.validate(req.body);
+  const { error } = addSchema.validate(req.body);
 
   if (error) {
     throw HttpError(400, "missing fields");
@@ -61,7 +61,11 @@ const updateStatusContact = async (req, res) => {
   }
 
   const { id } = req.params;
-  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+  const result = await Contact.findByIdAndUpdate(
+    id,
+    { favorite: req.body.favorite },
+    { new: true }
+  );
 
   if (!result) {
     throw HttpError(404, "Not found");
