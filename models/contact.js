@@ -1,6 +1,7 @@
 const { Schema, model } = require("mongoose");
 const Joi = require("joi");
 const { handleMongooseError } = require("../helpers");
+const { nanoid } = require("nanoid");
 
 const contactSchema = new Schema(
   {
@@ -24,13 +25,15 @@ const contactSchema = new Schema(
 
 contactSchema.post("save", handleMongooseError);
 
+model.id = nanoid();
+
 const Contact = model("contact", contactSchema);
 
 const addSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().required(),
   phone: Joi.string().required(),
-});
+}).messages({ "any.required": "missing required {#field} field" });
 
 const updateFavoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),

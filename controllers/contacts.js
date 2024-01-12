@@ -3,6 +3,7 @@ const {
   addSchema,
   updateFavoriteSchema,
 } = require("../models/contact");
+const { nanoid } = require("nanoid");
 
 const { HttpError } = require("../helpers");
 const ctrlWrapper = require("../helpers/сtrlWrapper");
@@ -25,15 +26,25 @@ const getById = async (req, res, next) => {
 };
 
 const addContact = async (req, res, next) => {
-  const { error } = addSchema.validate(req.body);
+  try {
+    const { error } = addSchema.validate(req.body);
 
-  if (error) {
-    throw HttpError(400, "missing required name field");
+    if (error) {
+      const missingField = error.details[0].context.label;
+      throw HttpError(400, `missing required ${missingField} field`);
+    }
+
+    const newContact = {
+      id: nanoid(),
+      ...req.body,
+    };
+
+    const result = await Contact.create(newContact);
+
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
   }
-
-  const result = await Contact.create(req.body);
-
-  res.status(201).json(result);
 };
 
 const updateById = async (req, res, next) => {
@@ -53,22 +64,23 @@ const updateById = async (req, res, next) => {
   res.json(result);
 };
 
-const updateStatusContact = async (req, res) => {
+const updateStatusContact = async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!req.body || !req.body.favorite) {
+    return next(HttpError(400, "missing field favorite"));
+  }
+
   const { error } = updateFavoriteSchema.validate(req.body);
 
   if (error) {
-    throw HttpError(400, "missing field favorite");
+    return next(HttpError(400, "Not found"));
   }
 
-  const { id } = req.params;
-  const result = await Contact.findByIdAndUpdate(
-    id,
-    { favorite: req.body.favorite },
-    { new: true }
-  );
+  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
 
   if (!result) {
-    throw HttpError(404, "Not found");
+    return next(HttpError(404, "Not found"));
   }
 
   res.json(result);
