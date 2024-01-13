@@ -33,10 +33,21 @@ const addSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().required(),
   phone: Joi.string().required(),
-}).messages({ "any.required": "missing required {#field} field" });
+}).messages({ "any.required": "missing required {#label} field" });
+
+const updateContactSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().required(),
+  phone: Joi.string().required(),
+});
 
 const updateFavoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),
-});
+}).messages({ "any.required": "Not found" });
 
-module.exports = { Contact, addSchema, updateFavoriteSchema };
+module.exports = {
+  Contact,
+  addSchema,
+  updateFavoriteSchema,
+  updateContactSchema,
+};

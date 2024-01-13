@@ -1,12 +1,11 @@
 const {
   Contact,
   addSchema,
+  updateContactSchema,
   updateFavoriteSchema,
 } = require("../models/contact");
-const { nanoid } = require("nanoid");
-
 const { HttpError } = require("../helpers");
-const ctrlWrapper = require("../helpers/сtrlWrapper");
+const ctrlWrapper = require("../helpers/ctrlWrapper");
 
 const listContacts = async (req, res, next) => {
   const result = await Contact.find();
@@ -26,20 +25,16 @@ const getById = async (req, res, next) => {
 };
 
 const addContact = async (req, res, next) => {
+  const { error } = addSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      message: `missing required ${error.details[0].context.label} field`,
+    });
+  }
+
   try {
-    const { error } = addSchema.validate(req.body);
-
-    if (error) {
-      const missingField = error.details[0].context.label;
-      throw HttpError(400, `missing required ${missingField} field`);
-    }
-
-    const newContact = {
-      id: nanoid(),
-      ...req.body,
-    };
-
-    const result = await Contact.create(newContact);
+    const result = await Contact.create(req.body);
 
     res.status(201).json(result);
   } catch (error) {
@@ -47,21 +42,30 @@ const addContact = async (req, res, next) => {
   }
 };
 
-const updateById = async (req, res, next) => {
-  const { error } = addSchema.validate(req.body);
+const updateContact = async (req, res, next) => {
+  const { id } = req.params;
 
-  if (error) {
+  if (Object.keys(req.body).length === 0) {
     throw HttpError(400, "missing fields");
   }
 
-  const { id } = req.params;
-  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+  const { error } = updateContactSchema.validate(req.body);
 
-  if (!result) {
+  if (error) {
     throw HttpError(404, "Not found");
   }
 
-  res.json(result);
+  try {
+    const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!result) {
+      throw HttpError(404, "Not found");
+    }
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
 };
 
 const updateStatusContact = async (req, res, next) => {
@@ -104,7 +108,7 @@ module.exports = {
   listContacts: ctrlWrapper(listContacts),
   getById: ctrlWrapper(getById),
   addContact: ctrlWrapper(addContact),
-  updateById: ctrlWrapper(updateById),
+  updateContact: ctrlWrapper(updateContact),
   updateStatusContact: ctrlWrapper(updateStatusContact),
   removeContact: ctrlWrapper(removeContact),
 };
