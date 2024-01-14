@@ -6,6 +6,7 @@ const {
 } = require("../models/contact");
 const { HttpError } = require("../helpers");
 const ctrlWrapper = require("../helpers/ctrlWrapper");
+// const { isValidObjectId } = require("mongoose");
 
 const listContacts = async (req, res, next) => {
   const result = await Contact.find();
@@ -24,45 +25,48 @@ const getById = async (req, res, next) => {
   res.json(result);
 };
 
-const addContact = async (req, res, next) => {
-  const { error } = addSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({
-      message: `missing required ${error.details[0].context.label} field`,
-    });
-  }
-
-  try {
-    const result = await Contact.create(req.body);
-
-    res.status(201).json(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
+// update PUT /api/contacts/:id/
 const updateContact = async (req, res, next) => {
   const { id } = req.params;
 
-  if (Object.keys(req.body).length === 0) {
+  if (!req.body) {
     throw HttpError(400, "missing fields");
   }
 
   const { error } = updateContactSchema.validate(req.body);
 
   if (error) {
+    throw HttpError(400, error.message);
+  }
+
+  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+
+  if (!result) {
     throw HttpError(404, "Not found");
   }
 
+  res.json(result);
+};
+
+// create POST /api/contacts/
+const addContact = async (req, res, next) => {
+  const { error } = addSchema.validate(req.body);
+
+  if (error) {
+    return next(
+      HttpError(400, `missing required ${error.details[0].context.label} field`)
+    );
+  }
+
   try {
-    const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+    const newContact = {
+      id: new Date().getTime().toString(),
+      ...req.body,
+    };
 
-    if (!result) {
-      throw HttpError(404, "Not found");
-    }
+    await Contact.create(newContact);
 
-    res.json(result);
+    res.status(201).json(newContact);
   } catch (error) {
     next(error);
   }
@@ -78,16 +82,24 @@ const updateStatusContact = async (req, res, next) => {
   const { error } = updateFavoriteSchema.validate(req.body);
 
   if (error) {
-    return next(HttpError(400, "Not found"));
+    return next(HttpError(400, error.message));
   }
 
-  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+  try {
+    const result = await Contact.findByIdAndUpdate(
+      id,
+      { favorite: req.body.favorite },
+      { new: true }
+    );
 
-  if (!result) {
+    if (!result) {
+      return next(HttpError(404, "Not found"));
+    }
+
+    res.json(result);
+  } catch (error) {
     return next(HttpError(404, "Not found"));
   }
-
-  res.json(result);
 };
 
 const removeContact = async (req, res, next) => {
@@ -107,8 +119,8 @@ const removeContact = async (req, res, next) => {
 module.exports = {
   listContacts: ctrlWrapper(listContacts),
   getById: ctrlWrapper(getById),
-  addContact: ctrlWrapper(addContact),
   updateContact: ctrlWrapper(updateContact),
+  addContact: ctrlWrapper(addContact),
   updateStatusContact: ctrlWrapper(updateStatusContact),
   removeContact: ctrlWrapper(removeContact),
 };
