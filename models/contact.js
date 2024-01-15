@@ -39,7 +39,7 @@ const updateContactSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().required(),
   phone: Joi.string().required(),
-}).messages({ "any.required": "missing fields" });
+});
 
 const updateFavoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),

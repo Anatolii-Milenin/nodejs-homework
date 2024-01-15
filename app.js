@@ -5,7 +5,6 @@ const dotenv = require("dotenv");
 const { HttpError } = require("./helpers");
 const handleObjectIdError = require("./middlewares/handleObjectIdError");
 const contactsRouter = require("./routes/api/contacts");
-// const isValidId = require("./middlewares/isValidId");
 
 dotenv.config();
 const app = express();
@@ -14,7 +13,6 @@ const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
-// app.use("/api/contacts/:id", isValidId);
 
 app.use("/api/contacts", contactsRouter);
 app.use(handleObjectIdError);

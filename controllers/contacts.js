@@ -29,7 +29,7 @@ const getById = async (req, res, next) => {
 const updateContact = async (req, res, next) => {
   const { id } = req.params;
 
-  if (!req.body) {
+  if (!req.body || Object.keys(req.body).length === 0) {
     throw HttpError(400, "missing fields");
   }
 
