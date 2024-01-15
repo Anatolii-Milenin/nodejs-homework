@@ -26,27 +26,6 @@ const getById = async (req, res, next) => {
 };
 
 // update PUT /api/contacts/:id/
-const updateContact = async (req, res, next) => {
-  const { id } = req.params;
-
-  if (!req.body || Object.keys(req.body).length === 0) {
-    throw HttpError(400, "missing fields");
-  }
-
-  const { error } = updateContactSchema.validate(req.body);
-
-  if (error) {
-    throw HttpError(400, error.message);
-  }
-
-  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
-
-  if (!result) {
-    throw HttpError(404, "Not found");
-  }
-
-  res.json(result);
-};
 
 // create POST /api/contacts/
 const addContact = async (req, res, next) => {
