@@ -1,9 +1,10 @@
 const { isValidObjectId } = require("mongoose");
+const { HttpError } = require("../helpers");
 
 const isValidId = (req, res, next) => {
   const { id } = req.params;
   if (!isValidObjectId(id)) {
-    return res.status(404).json({ message: "Not found" });
+    next(HttpError(400, "Not found"));
   }
 
   next();

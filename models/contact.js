@@ -1,7 +1,6 @@
 const { Schema, model } = require("mongoose");
 const Joi = require("joi");
 const { handleMongooseError } = require("../helpers");
-const { nanoid } = require("nanoid");
 
 const contactSchema = new Schema(
   {
@@ -19,13 +18,16 @@ const contactSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
   },
   { versionKey: false }
 );
 
 contactSchema.post("save", handleMongooseError);
-
-model.id = nanoid();
 
 const Contact = model("contact", contactSchema);
 
