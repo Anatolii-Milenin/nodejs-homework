@@ -53,20 +53,17 @@ const addContact = async (req, res, next) => {
   const { error } = addSchema.validate(req.body);
 
   if (error) {
-    return next(
-      HttpError(400, `missing required ${error.details[0].context.label} field`)
-    );
+    return next(HttpError(400, error.message));
   }
 
   try {
     const newContact = {
-      id: new Date().getTime().toString(),
       ...req.body,
     };
 
-    await Contact.create(newContact);
+    const createdContact = await Contact.create(newContact);
 
-    res.status(201).json(newContact);
+    res.status(201).json(createdContact);
   } catch (error) {
     next(error);
   }
