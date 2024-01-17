@@ -1,5 +1,7 @@
 const { Schema, model } = require("mongoose");
 const Joi = require("joi");
+// eslint-disable-next-line no-unused-vars
+const bcryptjs = require("bcryptjs");
 const { handleMongooseError } = require("../helpers");
 
 const emailRegexp = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
@@ -66,4 +68,5 @@ const schemas = {
 module.exports = {
   User,
   schemas,
+  handleMongooseError,
 };

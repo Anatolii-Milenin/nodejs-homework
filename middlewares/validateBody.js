@@ -5,7 +5,10 @@ const validateBody = (schema) => {
     const { error } = schema.validate(req.body);
 
     if (error) {
-      next(HttpError(400, error.message));
+      const errorMessage = error.details
+        .map((detail) => detail.message)
+        .join("; ");
+      next(HttpError(400, errorMessage));
     }
 
     next();

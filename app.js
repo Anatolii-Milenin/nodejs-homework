@@ -16,9 +16,8 @@ app.use(express.json());
 
 app.use("/api/contacts", contactsRouter);
 app.use("/api/auth", authRouter);
-app.use(handleObjectIdError);
 
-app.use((req, res) => {
+app.use((req, res, next) => {
   res.status(404).json({ message: "Not found" });
 });
 
@@ -26,5 +25,7 @@ app.use((err, req, res, next) => {
   const { status = 500, message = "server error" } = err;
   res.status(status).json({ message });
 });
+
+app.use(handleObjectIdError);
 
 module.exports = app;
