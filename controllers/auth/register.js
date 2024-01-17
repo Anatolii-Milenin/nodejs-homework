@@ -34,7 +34,7 @@ const register = async (req, res, next) => {
       error.status = 400;
     } else if (error.name === "MongoError" && error.code === 11000) {
       error.status = 409;
-  
+    }
     next(error);
   }
 };
