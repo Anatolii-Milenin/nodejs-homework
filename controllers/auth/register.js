@@ -1,27 +1,26 @@
-// controllers/auth/register.js
-
 const bcryptjs = require("bcryptjs");
-const { User } = require("../../models/user");
+const { User, schemas } = require("../../models/user");
 const { HttpError } = require("../../helpers");
 
 const register = async (req, res, next) => {
-  const { email, password } = req.body;
-
   try {
-    // Проверка наличия пользователя с таким email
+    const { email, password } = req.body;
+
+    const { error } = schemas.registerSchema.validate({ email, password });
+    if (error) {
+      throw HttpError(400, error.details[0].message);
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw HttpError(409, "Email in use");
     }
 
-    // Хеширование пароля
     const hashPassword = await bcryptjs.hash(password, 10);
 
-    // Создание нового пользователя
     const newUser = await User.create({
       email,
       password: hashPassword,
-      subscription: "starter", // или другое значение по умолчанию
     });
 
     res.status(201).json({
@@ -31,7 +30,11 @@ const register = async (req, res, next) => {
       },
     });
   } catch (error) {
-    // Перехватываем ошибки и отправляем их в обработчик ошибок
+    if (error.name === "ValidationError") {
+      error.status = 400;
+    } else if (error.name === "MongoError" && error.code === 11000) {
+      error.status = 409;
+  
     next(error);
   }
 };
